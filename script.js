@@ -60,7 +60,25 @@ function createItemEl(columnEl, column, item, index) {
   listEl.textContent = item;
   listEl.draggable = true;
   listEl.ondragstart = (e) => drag(e);
+  listEl.contentEditable = true;
+  listEl.id = index;
+  listEl.setAttribute("onfocusout", `updateItem(${index}, ${column})`);
   columnEl.append(listEl);
+}
+
+function updateItem(i, c) {
+  const selectedArray = listArrays[c];
+  const selectedColumnEL = listColumns[c].children;
+  if (!selectedColumnEL[i].textContent) {
+    delete selectedArray[i];
+  } else {
+    selectedArray[i] = selectedColumnEL[i].textContent;
+  }
+  updateDOM();
+}
+
+function filterArrays(arr) {
+  return arr.filter((e) => e);
 }
 
 // Update Columns in DOM - Reset HTML, Filter Array, Update localStorage
@@ -72,22 +90,45 @@ function updateDOM() {
   }
   // Backlog Column
   backlogList.textContent = "";
+  backlogListArray = filterArrays(backlogListArray);
   backlogListArray.forEach((each, i) => createItemEl(backlogList, 0, each, i));
   // Progress Column
   progressList.textContent = "";
+  progressListArray = filterArrays(progressListArray);
   progressListArray.forEach((each, i) =>
-    createItemEl(progressList, 0, each, i)
+    createItemEl(progressList, 1, each, i)
   );
   // Complete Column
   completeList.textContent = "";
+  completeListArray = filterArrays(completeListArray);
   completeListArray.forEach((each, i) =>
-    createItemEl(completeList, 0, each, i)
+    createItemEl(completeList, 2, each, i)
   );
   // On Hold Column
   onHoldList.textContent = "";
-  onHoldListArray.forEach((each, i) => createItemEl(onHoldList, 0, each, i));
+  onHoldListArray = filterArrays(onHoldListArray);
+  onHoldListArray.forEach((each, i) => createItemEl(onHoldList, 3, each, i));
   // Run getSavedColumns only once, Update Local Storage
   updateSavedColumns();
+}
+
+function addToColumn(c) {
+  const itemText = addItems[c].textContent;
+  listArrays[c].push(itemText);
+  updateDOM();
+  addItems[c].textContent = "";
+}
+
+function showInputBox(c) {
+  addBtns[c].style.display = "hidden";
+  saveItemBtns[c].style.display = "flex";
+  addItemContainers[c].style.display = "flex";
+}
+function hideInputBox(c) {
+  addBtns[c].style.visibility = "visible";
+  saveItemBtns[c].style.display = "none";
+  addItemContainers[c].style.display = "none";
+  addToColumn(c);
 }
 
 function rebuildArrays() {
